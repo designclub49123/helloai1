@@ -3,7 +3,7 @@ import { predictiveService, DeliveryPrediction } from './predictiveService';
 import { businessInsightsService } from './businessInsightsService';
 import { visualRecognitionService } from './visualRecognitionService';
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
 
 interface Order {
