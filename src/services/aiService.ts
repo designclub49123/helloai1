@@ -3,8 +3,8 @@ import { predictiveService, DeliveryPrediction } from './predictiveService';
 import { businessInsightsService } from './businessInsightsService';
 import { visualRecognitionService } from './visualRecognitionService';
 
-const OPENROUTER_API_KEY = "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";
-const MODEL = "nvidia/nemotron-3-nano-30b-a3b:free";
+const OPENROUTER_API_KEY = "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";
+const MODEL = "kwaipilot/kat-coder-pro:free";
 
 interface Order {
   id: string;
