@@ -3,7 +3,7 @@ import { predictiveService, DeliveryPrediction } from './predictiveService';
 import { businessInsightsService } from './businessInsightsService';
 import { visualRecognitionService } from './visualRecognitionService';
 
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
 const MODEL = "kwaipilot/kat-coder-pro:free";
 
 interface Order {
@@ -269,6 +269,14 @@ async function getRelevantOrderData(userMessage: string): Promise<string> {
 
 export async function getAIResponse(userMessage: string, conversationHistory: any[] = []): Promise<string> {
   try {
+    // Check if API key is available
+    console.log('API Key check:', OPENROUTER_API_KEY ? 'Present' : 'Missing');
+    console.log('API Key length:', OPENROUTER_API_KEY?.length || 0);
+    
+    if (!OPENROUTER_API_KEY) {
+      return "AI service is not properly configured. Please check your environment variables and restart the application.";
+    }
+    
     // Get relevant order data
     const relevantData = await getRelevantOrderData(userMessage);
     
@@ -492,7 +500,18 @@ ${visualRecognitionInfo ? `\n${visualRecognitionInfo}\n` : ''}
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('API Response Error:', response.status, errorText);
+      
+      if (response.status === 401) {
+        return "AI service authentication failed. Please check your API key configuration.";
+      } else if (response.status === 429) {
+        return "AI service is temporarily unavailable due to rate limits. Please try again in a moment.";
+      } else if (response.status >= 500) {
+        return "AI service is currently experiencing technical difficulties. Please try again later.";
+      } else {
+        return `AI service error: ${response.status} ${response.statusText}`;
+      }
     }
 
     const data = await response.json();
@@ -507,6 +526,14 @@ ${visualRecognitionInfo ? `\n${visualRecognitionInfo}\n` : ''}
     
     if (error.name === 'AbortError') {
       return "I'm taking too long to respond. Please try again with a shorter message.";
+    }
+    
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      return "I'm having trouble connecting to my AI services. Please check your internet connection and try again.";
+    }
+    
+    if (error.message.includes('Invalid API response format')) {
+      return "I received an unexpected response from the AI service. Please try again.";
     }
     
     return "I'm experiencing some technical difficulties connecting to my neural network. Please try again in a moment, or ask me about a specific order ID or tracking number.";
